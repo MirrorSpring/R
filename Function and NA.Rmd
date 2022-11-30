@@ -1,0 +1,73 @@
+# Function
+
+Function is a set of codes
+
+```{r}
+vec=10:20
+min(vec)
+max(vec)
+mean(vec)
+median(vec)
+sum(vec)
+sd(vec)
+summary(vec)
+table(vec)
+range(vec)
+```
+
+```{r}
+gugugu=function(vec1,vec2){
+  for(i in vec1){
+    for(j in vec2){
+       cat(i,"*",j,"=",i*j,"\n")
+    }
+  }
+}
+```
+
+```{r}
+gugugu(2:3,1:5)
+```
+
+# Calculating data with NA
+
+Consider the data with NA
+
+```{r}
+data=c(10,20,5,4,40,7,NA,6,3,NA,2,NA)
+```
+
+We can check the quantity of NA by 2 means
+
+```{r}
+sum(is.na(data))
+table(is.na(data))
+```
+
+The first thing to do is try calculating without NA
+
+```{r}
+mean(data,na.rm=T)
+```
+
+Or replace NA with 0
+
+```{r}
+mean(ifelse(is.na(data),0,data))
+```
+
+We can also replace NA with mean without NA, but it is not recommended
+
+```{r}
+mean(ifelse(is.na(data),mean(data,na.rm=T),data))
+```
+
+Or other values(Median is recommended)
+
+```{r}
+mean(ifelse(is.na(data),median(data,na.rm=T),data)) #Median
+mean(ifelse(is.na(data),max(data,na.rm=T),data)) #Max
+mean(ifelse(is.na(data),min(data,na.rm=T),data)) #Min
+```
+
+If NA is too many we can't use that column or data

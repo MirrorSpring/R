@@ -1,0 +1,46 @@
+# If
+
+```{r}
+a=7
+if(a%%2==0){
+  cat(a,"is even")
+} else{
+  cat(a,"is odd")
+}
+```
+
+```{r}
+a=c(8,10,11)
+if(a%%2==0){
+  cat(a,"is even")
+} else{
+  cat(a,"is odd")
+}
+```
+
+```{r}
+a=c(8,10,11)
+ifelse(a%%2==0,paste(a,"is even"),paste(a,"is odd"))
+```
+
+```{r}
+excel=read.csv("excel.csv")
+head(excel)
+tail(excel)
+str(excel)
+summary(excel)
+```
+
+```{r}
+data.frame(oq1=head(excel$q1,10), nq1=head(ifelse(excel$q1>=3,sqrt(excel$q1),excel$q1),10))
+```
+
+```{r}
+excel$q6=ifelse(excel$q1>=3,sqrt(excel$q1),excel$q1)
+head(excel,10)
+```
+
+```{r}
+score=c(78,85,95,65,100)
+ifelse(score>=80,"great","good")
+```

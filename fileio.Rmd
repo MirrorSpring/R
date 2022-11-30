@@ -1,0 +1,379 @@
+# File I/O
+
+First, look at these vectors
+
+```{r}
+no=1:4
+name=c("Apple","Banana","Peach","Watermelon")
+price=c(500,200,200,500)
+quantity=c(5,3,4,5)
+```
+
+We can make a dataframe using these vectors
+
+```{r}
+fruit=data.frame(No=no,Product=name,Price=price,Stock=quantity)
+fruit
+```
+
+It can be saved as CSV
+
+```{r}
+write.csv(fruit,"fruit.csv", row.names=F)
+```
+
+Let's load it
+
+```{r}
+read.csv("fruit.csv")
+```
+
+# GDP Data
+
+```{r}
+gdp=read.csv("GDP.csv")
+```
+
+```{r}
+head(gdp)
+```
+
+This data should be refined
+
+```{r}
+gdp=gdp[-(1:4),-c(3,6)]
+```
+
+```{r}
+head(gdp)
+```
+
+Top 15 datas
+
+```{r}
+gdp15=head(gdp,15)
+gdp15
+```
+
+### Defining name of columns and rows
+
+```{r}
+colnames(gdp)=c("Code", "Ranking", "Nation", "GDP")
+gdp
+```
+
+```{r}
+colnames(gdp15)=c("Code", "Ranking", "Nation", "GDP")
+gdp15
+```
+
+```{r}
+rownames(gdp)=c()
+tail(gdp)
+```
+
+```{r}
+rownames(gdp15)=c()
+tail(gdp15)
+```
+
+### Structure of GDP
+
+```{r}
+str(gdp15)
+```
+
+Making GDP numeric
+
+```{r}
+library(stringr)
+gdp15$GDP=str_replace_all(gdp15$GDP,",","")
+gdp15$GDP=as.numeric(gdp15$GDP)
+```
+
+```{r}
+gdp15
+```
+
+#### Bar graph
+
+```{r}
+barplot(gdp15$GDP, col="skyblue",main="GDP Ranking in 2018",
+        xlab="Nation", ylab="Dollars",names=gdp15$Code,
+        cex.names=0.5)
+```
+
+Let's focus on USA, China and Korea
+
+```{r}
+barplot(gdp15$GDP, col=c(rep("red",2),rep("skyblue",9),"red",rep("skyblue",3)),
+        main="GDP Ranking in 2018",
+        xlab="Nation", ylab="Dollars",names=gdp15$Code,
+        cex.names=0.5)
+```
+
+Making Y-axis tidy
+
+```{r}
+barplot(gdp15$GDP/1000, col=c(rep("red",2),rep("skyblue",9),"red",rep("skyblue",3)),
+        main="GDP Ranking in 2018",
+        xlab="Nation", ylab="1000 Dollars",names=gdp15$Code,
+        cex.names=0.5)
+```
+
+```{r}
+barplot(gdp15$GDP/1000, col=ifelse(gdp15$GDP/1000>=3000,"red","skyblue"),
+        main="GDP Ranking in 2018",
+        xlab="Nation", ylab="1000 Dollars",names=gdp15$Code,
+        cex.names=0.5)
+```
+
+## Data processing
+
+Installing library
+
+```{r}
+install.packages("dplyr")
+library(dplyr)
+```
+
+#### Sorting Sepal.Length in Iris
+
+```{r}
+head(arrange(iris,Sepal.Length)) #order by Sepal.Length asc
+head(arrange(iris[,1:2],Sepal.Length))
+```
+
+```{r}
+head(arrange(iris,Sepal.Length,Sepal.Width))
+```
+
+```{r}
+head(arrange(iris,desc(Sepal.Length))) #order by Sepal.Length asc
+```
+
+#### Sampling Iris
+
+```{r}
+irisSamp=iris[sample(1:nrow(iris),nrow(iris)*0.7),]
+head(irisSamp)
+```
+
+Checking if sampling is appropriate
+
+```{r}
+table(irisSamp$Species) #Inappropriate
+```
+
+Then we should sample like this
+
+```{r}
+samp=c(sample(1:50,35),sample(51:100,35),sample(101:150,35))
+irisSamp=iris[samp,]
+table(irisSamp$Species)
+```
+
+Sampling is essential for machine learning, so it is important to sample data appropriately
+
+```{r}
+#Train data
+iris.train=iris[samp,]
+
+#Test data
+iris.test=iris[-samp,]
+```
+
+```{r}
+summary(iris.train)
+```
+
+```{r}
+summary(iris.test)
+```
+
+```{r}
+set.seed(1234) #Only for lecture
+samp=c(sample(1:50,35),sample(51:100,35),sample(101:150,35))
+samp
+```
+
+```{r}
+iris_setosa=subset(iris,Species=="setosa")
+rownames(iris_setosa)=c()
+iris_setosa
+```
+
+```{r}
+str(iris_setosa)
+```
+
+Adjusting factors
+
+```{r}
+iris_setosa$Species=factor(iris_setosa$Species)
+str(iris_setosa)
+```
+
+```{r}
+iris_versicolor=subset(iris,Species=="versicolor")
+iris_versicolor$Species=factor(iris_versicolor$Species)
+rownames(iris_versicolor)=c()
+str(iris_versicolor)
+```
+
+```{r}
+iris_versicolor
+```
+
+```{r}
+iris_virginica=subset(iris,Species=="virginica")
+iris_virginica$Species=factor(iris_virginica$Species)
+rownames(iris_virginica)=c()
+str(iris_virginica)
+```
+
+```{r}
+iris_setosa5=subset(iris_setosa,Sepal.Length>=5)
+iris_setosa5$Species=factor(iris_setosa5$Species)
+rownames(iris_setosa5)=c()
+str(iris_setosa5)
+```
+
+```{r}
+iris_setosa5
+```
+
+```{r}
+min(iris_setosa5$Sepal.Length)
+```
+
+We can make subset using some columns
+
+```{r}
+subset(iris,select=-Species)
+```
+
+# Group operation
+
+```{r}
+aggregate(Sepal.Width~Species,iris,mean)
+```
+
+# Traffic Accident in Seoul
+
+```{r}
+seoul=read.csv("newSeoul2019.csv")
+```
+
+```{r}
+head(seoul)
+tail(seoul)
+```
+
+```{r}
+str(seoul)
+```
+
+```{r}
+summary(seoul)
+```
+
+### Check NA
+
+```{r}
+sum(is.na(seoul))
+```
+
+NA for each columns
+
+```{r}
+for(i in colnames(seoul)){
+  cat(i,":",sum(is.na(seoul$i)),"\n")
+}
+```
+
+Quantity for each years
+
+```{r}
+table(seoul$년도)
+```
+
+```{r}
+table(seoul$월)
+```
+
+```{r}
+table(seoul$자치구명)
+```
+
+```{r}
+length(unique(seoul$자치구명))
+```
+
+### Mean of cases by District
+
+```{r}
+regionAcc.mean=aggregate(발생건수~자치구명,seoul,mean)
+head(regionAcc.mean)
+```
+
+```{r}
+tail(arrange(regionAcc.mean,desc(발생건수)))
+```
+
+### Standard deviation
+
+```{r}
+regionAcc.sd=aggregate(발생건수~자치구명,seoul,sd)
+head(regionAcc.sd)
+```
+
+### Coefficient of variation=standard deviation/mean
+
+```{r}
+regionAcc.cv=regionAcc.sd$발생건수/regionAcc.mean$발생건수
+regionAcc.cv
+```
+
+```{r}
+regionAcc=data.frame(자치구명=regionAcc.mean$자치구명,변동계수=regionAcc.cv)
+head(regionAcc)
+```
+
+```{r}
+arrange(regionAcc,desc(변동계수))
+```
+
+```{r}
+regionInjure.mean=aggregate(부상자수~자치구명,seoul,mean)
+regionInjure.sd=aggregate(부상자수~자치구명,seoul,sd)
+regionInjure.cv=regionInjure.sd$부상자수/regionInjure.mean$부상자수
+
+regionInjure=data.frame(자치구명=regionInjure.mean$자치구명,변동계수=regionInjure.cv)
+
+arrange(regionInjure,desc(변동계수))
+```
+
+```{r}
+regionDeath.mean=aggregate(사망자수~자치구명,seoul,mean)
+regionDeath.sd=aggregate(사망자수~자치구명,seoul,sd)
+regionDeath.cv=regionDeath.sd$사망자수/regionDeath.mean$사망자수
+
+regionDeath=data.frame(자치구명=regionDeath.mean$자치구명,변동계수=regionDeath.cv)
+
+arrange(regionDeath,desc(변동계수))
+```
+
+## Correlation
+
+```{r}
+cor(seoul$발생건수,seoul$부상자수)
+cor(seoul$발생건수,seoul$사망자수)
+cor(seoul$부상자수,seoul$사망자수)
+```
+
+```{r}
+plot(seoul$발생건수,seoul$부상자수)
+plot(seoul$발생건수,seoul$사망자수)
+plot(seoul$부상자수,seoul$사망자수)
+```

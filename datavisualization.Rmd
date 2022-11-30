@@ -1,0 +1,451 @@
+# Data Visualization
+
+### Scatter
+
+```{r}
+y=c(1,1,2,2,3,3,4,4,5,5)
+plot(y)
+```
+
+```{r}
+x=1:10
+y=1:10
+plot(x,y)
+```
+
+```{r}
+plot(y~x)
+```
+
+This graph should be more tidy
+
+```{r}
+plot(x,y,
+     xlim=c(0,11),
+     ylim=c(0,11)
+     )
+```
+
+```{r}
+seoul=read.csv("NewSeoul2019.csv")
+head(seoul)
+```
+
+### Scatters of cases and injuries
+
+```{r}
+plot(seoul$부상자수~seoul$발생건수, col=ifelse(seoul$발생건수<=150,"red","skyblue"),
+        main="Traffic Accident Data in Seoul",
+        xlab="Cases", ylab="Injuries",xlim=c(min(seoul$발생건수)-20,max(seoul$발생건수)+20),ylim=c(min(seoul$부상자수)-20,max(seoul$부상자수)+20)
+        )
+```
+
+```{r}
+reg=lm(seoul$부상자수~seoul$발생건수)
+plot(seoul$부상자수~seoul$발생건수, col=ifelse(seoul$자치구명==max(aggregate(발생건수~자치구명,seoul,max)[,1])|seoul$자치구명==min(aggregate(발생건수~자치구명,seoul,min)[,1]),"red","green"),
+        main="Traffic Accident Data in Seoul",
+        xlab="Cases", ylab="Injuries",xlim=c(min(seoul$발생건수)-20,max(seoul$발생건수)+20),ylim=c(min(seoul$부상자수)-20,max(seoul$부상자수)+20)
+        );abline(reg$coefficients[1],reg$coefficients[2],col="blue")
+```
+
+```{r}
+y=c(1,3,2,4,8,5,7,6,9)
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1)
+     )
+```
+
+## Different types of Graph
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l" #Default is "p"
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="b" #Default is "p"
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="c" #Default is "p"
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="o" #Default is "p"
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="h" #Default is "p"
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="s" #Not commonly used
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="S" #Large S
+     )
+```
+
+## Line Type
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=1 #From 1 to 6
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=2
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=3
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=4
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=5
+     )
+```
+
+```{r}
+plot(y,main="Simple Time Series",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     type="l",
+     lty=6
+     )
+```
+
+# Plotting Symbol
+
+```{r}
+plot(y,main="킹받는 산점도",
+     xlim=c(min(y)-1,max(y)+1),
+     ylim=c(min(y)-1,max(y)+1),
+     pch="ㅋ",
+     col="black"
+     )
+```
+
+```{r}
+x1=runif(1000)
+y1=runif(10000)
+plot(y1,main="Random",
+     xlim=c(1,10000),
+     ylim=c(min(y1),max(y1)),
+     col=ifelse(y1>0.5,"red","blue"),
+     pch=ifelse(y1>0.5,1,18)
+     )
+```
+
+## Customizing Line Graph
+
+```{r}
+abc=c(260,300,250,280,310)
+def=c(180,200,210,190,170)
+ghi=c(210,250,260,210,270)
+```
+
+```{r}
+plot(abc,
+     type="o",
+     col="red",
+     ylim=c(0,400),
+     axes=F, #Remove axis
+     ann=F #Remove labels
+     )
+axis(1,
+     at=1:5,
+     lab=c("Seoul", "Washington", "Paris", "London", "Tokyo"),
+     cex.axis=0.7
+     )
+axis(2,
+     ylim=c(0,400),
+     cex.axis=0.7
+     )
+title(main="Sales", col.main="black")
+title(xlab="Location", col.lab="darkgreen")
+title(ylab="Sales", col.lab="blue")
+lines(def,
+      type="o",
+      pch=22,
+      col="blue",
+      lty=2
+      )
+lines(ghi,
+      type="o",
+      pch=25,
+      col="green",
+      lty=3
+      )
+legend(4,100,
+       c("Fruit","Electronics","Clothes"),
+       col=c("red","blue","green"),
+       pch=c(21,22,25),
+       lty=c(1,2,3),
+       cex=0.7 #Default is 1
+       )
+```
+
+```{r}
+x=1:6
+y=6:1
+barplot(x,
+        main="1~6",
+        xlab="Sales",
+        ylab="Amounts",
+        names=c("A","B","C","D","E","F"),
+        col=c("red",rep("blue",5))
+        )
+```
+
+```{r}
+x=matrix(1:6,3,2)
+rownames(x)=c("A","B","C")
+barplot(x,
+        ylim=c(0,10),
+        beside=T,
+        names=c("Korea","USA"),
+        main="Sales",
+        xlab="Nation",
+        ylab="Frequency",
+        col=rep(c("red","green","blue"),2),
+        legend.text=T
+        )
+```
+
+```{r}
+barplot(abc,
+        main="Baseball Sales",
+        xlab="Season",
+        ylab="Sales",
+        names=c("Jan","Feb","Mar","Apr","May"),
+        col=c("red",rep("blue",length(abc)-1)),
+        density=c(10,20,30,40,50),
+        border=c("red",rep("blue",length(abc)-1))
+        )
+```
+
+# Education Data
+
+```{r}
+edu=read.csv("education.csv", header=F)
+head(edu)
+```
+
+```{r}
+str(edu)
+```
+
+```{r}
+summary(edu)
+```
+
+V1: gender(1 is male)
+
+V2: score
+
+V3: subject(Korean, English, Maths)
+
+V4: School(elementary, middle, high, college, graduate)
+
+```{r}
+sum(is.na(edu)) #good!
+```
+
+Validating data
+
+```{r}
+table(edu$V1) #pass
+table(edu$V3) #pass
+table(edu$V4) #pass
+```
+
+Making factor
+
+```{r}
+edu$V1=factor(edu$V1,levels=1:2,labels=c("M","F"))
+edu$V3=factor(edu$V3,levels=1:3,labels=c("Korean","English","Maths"))
+edu$V4=factor(edu$V4,levels=1:5,labels=c("Elementary","Middle","High","College","Graduate"))
+```
+
+```{r}
+head(edu)
+```
+
+```{r}
+str(edu)
+```
+
+Making column names
+
+```{r}
+colnames(edu)=c("Gender","Score","Subject","Education")
+head(edu)
+```
+
+```{r}
+table(edu$Score)
+```
+
+```{r}
+hist(edu$Score)
+```
+
+```{r}
+barplot(table(edu$Score))
+```
+
+```{r}
+table(edu$Gender)
+table(edu$Education)
+table(edu$Gender,edu$Education)
+table(edu$Education,edu$Gender)
+```
+
+```{r}
+barplot(table(edu$Education,edu$Gender),beside=T)
+```
+
+```{r}
+cdata=c(305,450,320,460,330,480,380,520)
+names(cdata)=c("2017/1","2018/1",
+               "2017/2","2018/2",
+               "2017/3","2018/3",
+               "2017/4","2018/4")
+cdata
+```
+
+```{r}
+barplot(cdata,
+        main="Sales",
+        ylim=c(0,600),
+        col=rainbow(length(cdata)),
+        xlab="Period",ylab="Sales(1,000$)"
+        )
+```
+
+```{r}
+barplot(cdata,
+        main="Sales",
+        xlim=c(0,600),
+        col=rainbow(length(cdata)),
+        ylab="Period",xlab="Sales(1,000$)",
+        horiz=T, #Makes chart horizontal
+        cex.names=0.5,
+        space=0.2 #Margin of bars
+        )
+```
+
+```{r}
+barplot(cdata,
+        main="Sales",
+        xlim=c(0,600),
+        col=rep(c("#DD4455","#7296c1"),4,each=T),
+        ylab="Period",xlab="Sales(1,000$)",
+        horiz=T, #Makes chart horizontal
+        cex.names=0.5,
+        space=rep(c(0.9,0.25),4,each=T) #Margin of bars
+        )
+```
+
+```{r}
+str(as.data.frame(VADeaths))
+```
+
+```{r}
+barplot(VADeaths, beside=T,
+        col=rainbow(5),
+        main="VADeaths",
+        ylim=c(0,80),
+        )
+legend(21,80,
+       rownames(VADeaths),
+       fill=rainbow(length(rownames(VADeaths))), #col for varplot
+       cex=0.8 #Default is 1
+       )
+```
+
+# Pie Chart
+
+```{r}
+tsales=c(210,110,400,550,600,130)
+week=c("Mon","Tue","Wed","Thu","Fri","Sat")
+ratio=tsales/sum(tsales)*100
+label=paste(week,"\n",ratio,"%")
+pie(tsales,
+    main="Sales of Week",
+    col=rainbow(length(tsales)),
+    labels=label,
+    )
+```
+
+# 3D Pie Chart
+
+```{r}
+library(plotrix) #Library for 3D pie chart
+```
+
+```{r}
+pie3D(tsales,
+    main="Sales of Week",
+    col=rainbow(length(tsales)),
+    labels=label,
+    labelcex=0.5,
+    explode=0.05
+    )
+```

@@ -1,0 +1,133 @@
+# For
+
+```{r}
+for(i in 1:10){
+  print(i)
+}
+```
+
+```{r}
+for(i in seq(1,100,2)){
+  print(i)
+}
+```
+
+```{r}
+for (i in 1:10){
+  cat(paste(i,"=>",sqrt(i),"\n"))
+}
+```
+
+```{r}
+sqrt(3)
+```
+
+```{r}
+data=1:100
+sum(ifelse(data%%2==0,data,0))
+sum(ifelse(data%%2==0,0,data))
+```
+
+```{r}
+for (i in 2:9){
+  for(j in 1:9){
+    cat(i,"*",j,"=",j*i,"\n")
+  }
+}
+```
+
+# Function
+
+```{r}
+gugu=function(){
+  for (i in 2:9){
+    for(j in 1:9){
+      cat(i,"*",j,"=",j*i,"\n")
+    }
+  }
+}
+```
+
+```{r}
+gugu()
+```
+
+```{r}
+gugu2=function(num){
+  for(i in 1:9){
+    cat(num,"*",i,"=",num*i,"\n")
+  }
+}
+```
+
+```{r}
+gugu2(5)
+```
+
+```{r}
+gugu3=function(n,m){
+  for(i in 1:m){
+    cat(n,"*",i,"=",n*i,"\n")
+  }
+}
+```
+
+```{r}
+gugu3(19,19)
+```
+
+```{r}
+gu=function(){
+  for(i in seq(2,8,2)){
+    for(j in seq(2,8,2)){
+      cat(i,"*",j,"=",i*j,"\n")
+    }
+    cat("-------------------\n")
+  }
+}
+```
+
+```{r}
+gu()
+```
+
+```{r}
+score=c(85,95,89)
+name=c("Carlson", "Caruana", "Nakamura")
+
+cat(paste(name,":",score,"\n",sep=""))
+```
+
+# While
+
+```{r}
+i=0
+while(i<10){
+  i=i+1
+  print(i)
+}
+```
+
+```{r}
+i=0
+while(T){
+  i=i+1
+  print(i)
+  if(i>9){
+    break
+  }
+}
+```
+
+# Repeat
+
+```{r}
+i=0
+repeat{
+  i=i+1
+  if(i>10){
+    break
+  }
+  print(i)
+}
+```
