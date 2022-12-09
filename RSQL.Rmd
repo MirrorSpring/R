@@ -1,0 +1,71 @@
+# Connecting to DB
+
+```{r}
+version
+```
+
+```{r}
+library(RMySQL)
+```
+
+```{r}
+conn=dbConnect(MySQL(),dbname='RSQL',user='root',password='Qhdks100%',host='127.0.0.1')
+```
+
+```{r}
+dbListTables(conn)
+```
+
+```{r}
+dbListFields(conn, "score")
+```
+
+```{r}
+result=dbGetQuery(conn,'select count(*) from score')
+result
+```
+
+```{r}
+dbSendQuery(conn,'insert into score values (1,100,100,100);')
+dbSendQuery(conn,'insert into score values (2,90,87,89);')
+dbSendQuery(conn,'insert into score values (3,100,87,78);')
+```
+
+```{r}
+dbSendQuery(conn,'update score set science=98 where id=1;')
+dbSendQuery(conn,'delete from score where id=3;')
+```
+
+```{r}
+data=read.csv("score.csv",header=F)
+colnames(data)=c("id","english","maths","science")
+head(data)
+```
+
+show variables like 'local_infile';
+
+set global local_inflie=1;
+
+```{r}
+dbWriteTable(conn,"score",data,overwrite=T,row.names=F)
+result=dbGetQuery(conn,"select * from score");result
+```
+
+```{r}
+str(result)
+```
+
+```{r}
+data2=read.csv("score2.csv",header=F)
+colnames(data2)=c("id","english","maths","science");head(data2)
+```
+
+```{r}
+dbWriteTable(conn,"score",data2,overwrite=F,row.names=F,append=T)
+```
+
+Disconnecting
+
+```{r}
+dbDisconnect(conn)
+```

@@ -1,0 +1,424 @@
+# Titanic
+
+### 일단 라이브러리
+
+```{r}
+library(dplyr)
+library(plotrix)
+library(caret)
+library(randomForest)
+library(nnet)
+library(e1071)
+```
+
+### EDA(Exploray Data Analysis)
+
+```{r}
+titanic=read.csv("Titanic_train.csv");head(titanic);tail(titanic)
+```
+
+```{r}
+sum(is.na(titanic))
+```
+
+```{r}
+str(titanic)
+```
+
+survived: 1 for alive, 0 for dead
+
+price: 1 for 1st, 2 for 2nd, 3 for 3rd
+
+sibsp: 함께 탑승한 형제자매, 배우자 수
+
+parch: 함께 탑승한 부모, 자식의 수
+
+cabin: 객실번호(없는 것은 3등급 티켓)
+
+Embarked: 탑승 항구(C는 Chersbourg, Q는 QueensTown, S는 Southampton)
+
+### Check NA
+
+```{r}
+colSums(is.na(titanic))
+```
+
+Age 컬럼의 분석 여부 확인
+
+```{r}
+177/891
+```
+
+Age가 NA인 것 빼고 데이터셋 만들기
+
+```{r}
+titanic2=subset(titanic,!is.na(Age));sum(is.na(titanic2))
+```
+
+```{r}
+head(titanic2)
+```
+
+### 생존자와 사망자 기준으로 정렬
+
+```{r}
+titanic=arrange(titanic,Survived);head(titanic)
+```
+
+### Survived 기준으로 생존자와 사망자 수 확인
+
+```{r}
+survtitanic=t(as.matrix(table(titanic$Survived)));survtitanic
+colnames(survtitanic)=c("사망","생존");survtitanic
+```
+
+0.38...애매하다
+
+```{r}
+labels=paste(c("사망","생존"),"\n",
+  round(c(survtitanic[1]/nrow(titanic),survtitanic[2]/nrow(titanic))*100,2),"%",sep="")
+pie3D(survtitanic,
+      main="타이타닉호 생존률",
+      col=c("red","blue"),
+      labels=labels,
+      labelcex=0.9,
+      explode=0.05
+    )
+```
+
+```{r}
+barplot(survtitanic,col=c("red","blue"),ylim=c(0,650),main="타이타닉호 생존자 수와 사망자 수",
+        las=1,xlab="생존여부",ylab="인원수(명)")
+for(i in 1:2){
+  text(0.7+1.2*(i-1),survtitanic[i]+50,
+       survtitanic[i])
+}
+```
+
+Survived 컬럼을 타겟으로 지정
+
+이제 분석하기 가장 쉬운 특성을 찾아보자
+
+```{r}
+head(titanic)
+```
+
+성별이 가장 쉬워 보인다
+
+## Feature Column 구성을 위해 Sex 컬럼 분석
+
+```{r}
+table(titanic$Sex)
+```
+
+```{r}
+titanic$Sex=as.factor(titanic$Sex);titanic
+```
+
+feature 컬럼은 분포가 비슷하면 사용하기 어렵다. Sex는 분포가 다르기 때문에 사용 가능
+
+```{r}
+tfemale=subset(titanic,Sex=="female");tfemale
+tmale=subset(titanic,Sex=="male");tmale
+```
+
+```{r}
+femalesurv=table(tfemale$Survived);femalesurv
+malesurv=table(tmale$Survived);malesurv
+```
+
+둘의 특징이 극명하게 차이가 나므로 Sex는 좋은 Feature Column
+
+```{r}
+flabel=c(paste("사망\n",round(femalesurv[1]/sum(femalesurv)*100,2),"%"),
+paste("생존\n",round(femalesurv[2]/sum(femalesurv)*100,2),"%"))
+
+mlabel=c(paste("사망\n",round(malesurv[1]/sum(malesurv)*100,2),"%"),
+paste("생존\n",round(malesurv[2]/sum(malesurv)*100,2),"%"))
+
+pie3D(femalesurv[2:1],
+      main="타이타닉호 여성 생존률",
+      col=c("red","blue")[2:1],
+      labels=flabel[2:1],
+      labelcex=0.9,
+      explode=0.05
+    )
+
+pie3D(malesurv[2:1],
+      main="타이타닉호 남성 생존률",
+      col=c("red","blue")[2:1],
+      labels=mlabel[2:1],
+      labelcex=0.9,
+      explode=0.05
+    )
+```
+
+```{r}
+barplot(table(titanic$Sex)[2:1],col=c("red","blue")[2:1],ylim=c(0,650),main="타이타닉 탑승객의 성별",
+        las=1,xlab="성별",ylab="인원수(명)")
+for(i in 1:2){
+  text(0.7+1.2*(i-1),table(titanic$Sex)[3-i]+50,
+       table(titanic$Sex)[3-i])
+}
+```
+
+Survived \<\-- [Sex]
+
+이제 다른 컬럼을 찾아보자.
+
+```{r}
+head(titanic)
+```
+
+## 티켓 등급 분석
+
+```{r}
+table(titanic$Pclass)
+```
+
+```{r}
+tfirst=subset(titanic,Pclass==1);tfirst
+tsecond=subset(titanic,Pclass==2);tsecond
+tthird=subset(titanic,Pclass==3);tthird
+```
+
+```{r}
+tffirst=subset(tfirst,Sex=="female");tffirst
+tfsecond=subset(tsecond,Sex=="female");tfsecond
+tfthird=subset(tthird,Sex=="female");tfthird
+
+tmfirst=subset(tfirst,Sex=="male")
+tmsecond=subset(tsecond,Sex=="male")
+tmthird=subset(tthird,Sex=="male")
+```
+
+```{r}
+femalesurvclass=c(
+round(table(tffirst$Survived)[2]/sum(table(tffirst$Survived))*100,2),
+round(table(tfsecond$Survived)[2]/sum(table(tfsecond$Survived))*100,2),
+round(table(tfthird$Survived)[2]/sum(table(tfthird$Survived))*100,2));femalesurvclass
+```
+
+```{r}
+malesurvclass=c(
+round(table(tmfirst$Survived)[2]/sum(table(tmfirst$Survived))*100,2),
+round(table(tmsecond$Survived)[2]/sum(table(tmsecond$Survived))*100,2),
+round(table(tmthird$Survived)[2]/sum(table(tmthird$Survived))*100,2));malesurvclass
+```
+
+```{r}
+survclass=rbind(femalesurvclass,malesurvclass)
+for(i in 1:2){
+  for(j in 1:3){
+    cat(j,"등 객실의",c("여성","남성")[i],"생존률은 ",survclass[i,j],"%\n")
+  }
+  cat("-----------------------------\n")
+}
+```
+
+확실히 티켓 등급은 Feature Column으로 쓸 수 있다.
+
+```{r}
+head(titanic)
+```
+
+## Embarked와의 연관성 확인
+
+```{r}
+unique(titanic$Embarked)
+```
+
+```{r}
+titanic$Embarked=as.factor(titanic$Embarked)
+str(titanic)
+```
+
+빈칸의 데이터 찾기
+
+```{r}
+subset(titanic,Embarked=="")
+```
+
+두 여성은 귀족의 도우미였다. 사람들이 가장 많이 탄 항구에서 같이 탔다고 유추해 볼 수 있다.
+
+```{r}
+table(titanic$Embarked)
+```
+
+```{r}
+titanic$Embarked[titanic$Embarked==""]="S"
+table(titanic$Embarked)
+```
+
+```{r}
+str(titanic) #아직도 카테고리는 4개
+```
+
+```{r}
+titanic$Embarked=factor(titanic$Embarked)
+str(titanic)
+```
+
+```{r}
+table(titanic$Embarked)
+```
+
+```{r}
+table(titanic$Embarked,titanic$Sex)
+cbind(table(titanic$Embarked,titanic$Sex),table(titanic$Embarked,titanic$Pclass))
+table(titanic$Embarked,titanic$Pclass)
+table(titanic$Embarked,titanic$Survived)
+```
+
+```{r}
+barplot(t(table(titanic$Embarked,titanic$Sex)),beside=T,col=c("red","blue"),
+        main="항구별 승선 인원",ylim=c(0,500),xlab="항구",ylab="인원수(명)",las=1)
+legend(1,350,
+       c("여성","남성"),
+       fill=c("red","blue"),
+       cex=1
+       )
+```
+
+```{r}
+barplot(t(table(titanic$Embarked,titanic$Survived)),beside=T,col=c("red","blue"),
+        main="항구별 생존 인원",ylim=c(0,500),xlab="항구",ylab="인원수(명)",las=1)
+legend(1,350,
+       c("사망","생존"),
+       fill=c("red","blue"),
+       cex=1
+       )
+```
+
+```{r}
+barplot(t(table(titanic$Embarked,titanic$Pclass)),beside=T,col=c("red","blue","#00bb00"),
+        main="항구별 티켓 등급",ylim=c(0,500),xlab="항구",ylab="인원수(명)",las=1)
+legend(1,350,
+       c("1등급","2등급","3등급"),
+       fill=c("red","blue","#00bb00"),
+       cex=1
+       )
+```
+
+```{r}
+barplot(t(table(titanic$Pclass,titanic$Survived)),beside=T,col=c("red","blue"),
+        main="티켓 등급별 사망률",ylim=c(0,400),xlab="항구",ylab="인원수(명)",las=1)
+legend(1,350,
+       c("사망","생존"),
+       fill=c("red","blue"),
+       cex=1
+       )
+```
+
+절반 이상의 승객이 Southampton에서 배를 탔으며 여기에서 탑승한 승객의 70%가 남성이었으며, 남성의 사망률이 여성보다 훨씬 높았으므로 Southampton의 사망률이 높게 나왔으며, Southampton에서 탑승한 승객의 60% 이상이 3등급 객실을 사용했다.
+
+C항구에서 탑승한 승객들은 1등 객실 비중 및 생존률이 높은 것으로 보아 이 지역은 부자 지역이다.
+
+## 연관도 보기
+
+```{r}
+cor(titanic$Survived,titanic$Pclass)
+```
+
+3등급 승객이 대다수였음에도 상관계수의 절댓값이 0.3이라는 것은 관련도가 매우 높다는 것을 의미한다.
+
+## RandomForest로 예측 모델 생성
+
+```{r}
+train_df_T=titanic #backup
+```
+
+```{r}
+target_col=c("Survived","Sex","Pclass","Embarked")
+head(train_df_T[,target_col])
+```
+
+성별을 숫자로 변환
+
+```{r}
+train_df_T$SexCode=ifelse(train_df_T$Sex=="male",0,1);train_df_T
+```
+
+Sex 컬럼 삭제
+
+```{r}
+train_df_T=subset(train_df_T,select=-Sex);head(train_df_T)
+target_col=c("Survived","SexCode","Pclass","Embarked")
+```
+
+Embarked를 One-Hot Encoding으로 변환
+
+```{r}
+train_df_T$Embarked_C=train_df_T$Embarked=="C"
+train_df_T$Embarked_S=train_df_T$Embarked=="S"
+train_df_T$Embarked_Q=train_df_T$Embarked=="Q"
+head(train_df_T[c("Embarked","Embarked_C","Embarked_S","Embarked_Q")])
+```
+
+```{r}
+target_col=c("Survived","SexCode","Pclass","Embarked_C","Embarked_Q","Embarked_S")
+head(train_df_T[,target_col])
+```
+
+```{r}
+set.seed(1234)
+samp=createDataPartition(train_df_T$Survived,p=0.7,list=F)
+data.train=train_df_T[samp,]
+data.test=train_df_T[samp,]
+train_data=data.train[target_col]
+test_data=data.test[target_col]
+```
+
+```{r}
+rf=randomForest(Survived~.,data=train_data,ntree=100)
+x=subset(test_data,select=-Survived)
+y=test_data$Survived
+pred=predict(rf,x)
+head(pred) #살 확률이 출력됨
+```
+
+```{r}
+pred[pred<=0.5]=0
+pred[pred>0.5]=1
+head(pred)
+```
+
+```{r}
+mean(pred==y)
+table(pred,y) #아주 중요!
+```
+
+## Survived를 factor로 변환 후 RandomForest 적용
+
+```{r}
+train_data$Survived=as.factor(train_data$Survived)#
+test_data$Survived=as.factor(train_data$Survived)#
+rf=randomForest(Survived~.,data=train_data,ntree=100)
+x=subset(test_data,select=-Survived)
+y=test_data$Survived
+pred=predict(rf,x)
+mean(pred==y)
+table(pred,y) #아주 중요!
+```
+
+## NN
+
+```{r}
+rf=nnet(Survived~.,data=train_data,size=3)
+x=subset(test_data,select=-Survived)
+y=test_data$Survived
+pred=predict(rf,x,type="class")
+mean(pred==y)
+table(pred,y) #아주 중요!
+```
+
+## SVM
+
+```{r}
+rf=svm(Survived~.,data=train_data)
+x=subset(test_data,select=-Survived)
+y=test_data$Survived
+pred=predict(rf,x)
+mean(pred==y)
+table(pred,y) #아주 중요!
+```
