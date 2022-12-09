@@ -1,0 +1,152 @@
+# Drawing Chart From Traffic Accident Data
+
+라이브러리
+
+```{r}
+library(stringr)
+```
+
+데이터 로드 및 간단한 정제
+
+```{r}
+acc=read.table("trafficAccident_2011_2019.txt",header=T)
+acc=subset(acc,자치구별!="합계")[,-4] #중간중간 "합계"라는 결측치 뿐인 데이터가 들어가 있다
+rownames(acc)=c()
+head(acc)
+nrow(acc)
+```
+
+-를 NA로 변경
+
+```{r}
+length(colnames(acc))
+for(i in 4:15){
+  acc[,i]=ifelse(acc[,i]=="-",NA,acc[,i])
+}
+head(acc)
+ifelse(acc$X1월=="-",NA,acc$X1월)
+```
+
+결측치 개수 확인
+
+```{r}
+sum(is.na(acc))
+table(is.na(acc))
+```
+
+컬럼명 정리
+
+```{r}
+colnames(acc)[-(1:3)]=substr(colnames(acc)[-(1:3)],2,4);acc
+```
+
+각 컬럼별 결측치 확인
+
+```{r}
+for(i in 4:15){
+  cat(colnames(acc)[i],":",sum(is.na(acc[,i])),"\n")
+}
+```
+
+전체적인 구조 확인
+
+```{r}
+str(acc)
+```
+
+통계 수치 확인...이지만 아직은 수치 데이터가 문자라서 의미는 없음
+
+```{r}
+length(colnames(acc))
+summary(acc)
+```
+
+수치 데이터에 , 제거
+
+```{r}
+for(i in 4:15){
+  str_replace_all(acc[,i],",","")
+}
+head(acc)
+```
+
+수치 데이터를 숫자로 변환, 결측치를 0으로 상정
+
+```{r}
+acc2=acc
+for(i in 4:15){
+  acc2[,i]=ifelse(is.na(acc2[,i])==F,as.numeric(acc2[,i]),NA)
+}
+for(i in 4:15){
+  acc[,i]=ifelse(is.na(acc[,i])==F,as.numeric(acc[,i]),0)
+}
+head(acc)
+```
+
+다시 통계 확인
+
+```{r}
+summary(acc)
+```
+
+새로운 데이터 프레임을 만들기 위한 데이터 생성
+
+```{r}
+cases=subset(acc,구분=="발생건수")[,-3]
+rownames(cases)=c()
+head(cases)
+```
+
+```{r}
+injuries=subset(acc,구분=="부상자수")[,-3]
+rownames(injuries)=c()
+head(injuries)
+```
+
+```{r}
+deaths=subset(acc,구분=="사망자수")[,-3]
+rownames(deaths)=c()
+head(deaths)
+```
+
+새로운 데이터 프레임을 만들기 위한 벡터 생성
+
+```{r}
+vcases=as.vector(as.matrix(cases[,-(1:2)]));head(vcases)
+vinjuries=as.vector(as.matrix(injuries[,-(1:2)]));head(vinjuries)
+vdeaths=as.vector(as.matrix(deaths[,-(1:2)]));head(vdeaths)
+vsector=acc$자치구별;head(vsector)
+vyear=acc$기간;head(vyear)
+vmonth=rep(paste(1:12,"월"),length(unique(acc$기간)));head(vmonth)
+```
+
+새로운 데이터 프레임 생성
+
+```{r}
+seoul=data.frame(년도=vyear,월=vmonth,자치구명=vsector,발생건수=vcases,부상자수=vinjuries,사망자수=vdeaths)
+head(seoul)
+```
+
+새 데이터 프레임의 통계치 확인
+
+```{r}
+summary(seoul)
+```
+
+각 데이터의 히스토그램
+
+```{r}
+hist(seoul$발생건수)
+hist(seoul$부상자수)
+hist(seoul$사망자수)
+```
+
+산점도와 회귀직선 그리기
+
+```{r}
+reg=lm(seoul$부상자수~seoul$발생건수)
+plot(seoul$부상자수~seoul$발생건수, col=ifelse(seoul$자치구명==max(aggregate(발생건수~자치구명,seoul,max)[,1])|seoul$자치구명==min(aggregate(발생건수~자치구명,seoul,min)[,1]),"red","green"),
+        main="Traffic Accident Data in Seoul",
+        xlab="Cases", ylab="Injuries",xlim=c(min(seoul$발생건수)-20,max(seoul$발생건수)+20),ylim=c(min(seoul$부상자수)-20,max(seoul$부상자수)+20)
+        );abline(reg$coefficients[1],reg$coefficients[2],col="blue")
+```

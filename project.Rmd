@@ -1,0 +1,151 @@
+# 서울시 출산율 감소의 원인
+
+-   합계출산율
+
+```{r}
+birth=read.csv("birth.csv")
+birth
+```
+
+```{r}
+birth2=as.data.frame(t(birth)[,2])
+birth2$연도=c(0,2003:2021)
+birth2$합계출산율=birth2$`t(birth)[, 2]`
+birth2=birth2[2:nrow(birth2),2:3]
+rownames(birth2)=c()
+birth2$합계출산율=as.numeric(birth2$합계출산율)
+head(birth2)
+```
+
+```{r}
+plot(as.matrix(birth2),type="l",ylim=c(0,1.1),col="purple",
+     ylab="합계출산율(명)",main="서울의 합계출산율",las=1)
+```
+
+-   평균 결혼 연령
+
+```{r}
+marriage=read.csv("marriage.csv")
+marriage
+```
+
+```{r}
+marriage2=marriage[3:nrow(marriage),]
+for(i in 1:3){
+  marriage2[,i]=as.numeric(marriage2[,i])
+}
+marriage2=marriage2[,1:2]
+colnames(marriage2)=c("연도","결혼연령")
+rownames(marriage)=c()
+head(marriage2)
+marriage2
+```
+
+```{r}
+plot(as.matrix(marriage2),type="l",ylim=c(0,max(marriage2$결혼연령)*1.1),col="#008000",
+     ylab="결혼연령(세)",main="서울 여성의 평균결혼연령",las=1)
+```
+
+-   가사노동분담률
+
+```{r}
+housework=read.csv("housework.csv")
+housework
+```
+
+```{r}
+housew=housework[,-c(7,13)]
+wifeall=housew[2,seq(2,ncol(housew),5)]
+wifeall=as.numeric(wifeall)
+wifemain=housew[2,seq(3,ncol(housew),5)]
+wifemain=as.numeric(wifemain)
+wife=wifeall+wifemain
+wife=c(wife[1:9],87.5,wife[10:18]) #Data of 2012 was etimated
+wife2=data.frame(연도=2003:2021,가사노동분담률=wife)
+head(wife2)
+wife2
+```
+
+```{r}
+plot(as.matrix(wife2),type="l",ylim=c(0,100),col="brown",
+     ylab="가사노동분담률(%)",main="서울 여성의 가사노동분담률",las=1)
+```
+
+-   경제활동인구
+
+```{r}
+economy=read.csv("economypeople.csv")
+economy
+```
+
+```{r}
+economy2=economy[3:4,]
+economy2=as.data.frame(t(economy2))
+colnames(economy2)=economy2[1,]
+economy2=economy2[-1,]
+rownames(economy2)=c()
+economy2$연도=2003:2021
+economy2=economy2[,c(3,1,2)]
+for(i in 2:3){
+  economy2[,i]=as.numeric(economy2[,i])
+}
+head(economy2)
+```
+
+```{r}
+barplot(t(as.matrix(economy2[,c(3,2)])),col=c("#FF6666","#00AAFF"),
+        names=2003:2021, ylab="경제활동인구(천 명)", xlab="연도",main="서울의 경제활동인구 분포",las=1)
+legend(19,2000,c("남자","여자"),fill=c("#00AAFF","#FF6666"))
+```
+
+-   경제활동 참가율
+
+```{r}
+economyrate=read.csv("economyrate.csv")
+economyrate
+```
+
+```{r}
+economyrate2=data.frame(연도=2003:2021,경제활동참가율=t(economyrate[2,]))
+rownames(economyrate2)=c()
+colnames(economyrate2)=c("연도","경제활동참가율")
+economyrate2$경제활동참가율=as.numeric(economyrate2$경제활동참가율)
+head(economyrate2)
+```
+
+```{r}
+plot(as.matrix(economyrate2),type="l",ylim=c(0,100),col="blue",
+     ylab="경제활동참가율(%)",main="서울 여성의 경제활동참가율",las=1)
+```
+
+-   합친 데이터셋
+
+```{r}
+women=birth2
+women$결혼연령=marriage2$결혼연령
+women$가사노동분담률=wife2$가사노동분담률
+women$경제활동인구=economy2$여자
+women$경제활동참가율=economyrate2$경제활동참가율
+head(women)
+write.csv(women,"women.csv",row.names=F)
+```
+
+-   상관계수 구하기
+
+```{r}
+cor(women$합계출산율,women$결혼연령)
+cor(women$합계출산율,women$가사노동분담률)
+cor(women$합계출산율,women$경제활동인구)
+cor(women$합계출산율,women$경제활동참가율)
+cor(women$가사노동분담률,women$경제활동인구)
+cor(women$가사노동분담률,women$경제활동참가율)
+cor(women$결혼연령,women$경제활동참가율)
+```
+
+```{r}
+summary(lm(women$합계출산율~women$가사노동분담률))
+summary(lm(합계출산율~경제활동참가율,data=women))
+summary(lm(합계출산율~결혼연령,data=women))
+summary(lm(합계출산율~경제활동참가율+가사노동분담률+결혼연령,data=women))
+summary(lm(합계출산율~연도,data=women))
+```

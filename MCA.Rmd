@@ -1,0 +1,94 @@
+# 주성분 분석
+
+서로 연관된 변수들이 관측되었을 때, 이 변수들이 전체적으로 가지고 있는 정보를 최대한 확보하는 적은 수의 변수를 생성하는 방법
+
+```{r}
+pasta=read.table("pasta.txt")
+head(pasta)
+```
+
+```{r}
+summary(pasta)
+```
+
+```{r}
+cor(pasta)
+```
+
+표준화: 평균을 0으로, 표준편차를 1로 변경
+
+```{r}
+data=scale(pasta);summary(data)
+apply(data,2,sd)
+```
+
+```{r}
+p1=prcomp(pasta,scale=T) #scale: 필요하면 표준화
+biplot(p1)
+```
+
+## 라면 데이터
+
+```{r}
+ramen=read.table("ramen.txt",header=T)
+head(ramen)
+rownames(ramen)=ramen[,1];ramen
+ramen=ramen[,-1];ramen
+```
+
+```{r}
+str(ramen)
+```
+
+```{r}
+cor(ramen[,-1])
+```
+
+```{r}
+p2=prcomp(ramen,scale=T)
+biplot(p2)
+```
+
+## USArrests
+
+1973년 미국 50개 주에서 각각 10만명당 체포된 통계
+
+도시 지역에 살고 있는 인구 비율도 있음
+
+```{r}
+head(USArrests)
+```
+
+```{r}
+cor(USArrests)
+```
+
+```{r}
+result=princomp(USArrests,cor=T);summary(result)
+```
+
+```{r}
+biplot(result)
+```
+
+```{r}
+result$loadings
+```
+
+```{r}
+score=0.536*USArrests$Murder+0.583*USArrests$Assault+0.278*USArrests$UrbanPop+0.543*USArrests$Rape
+score
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+Result=data.frame(States=rownames(USArrests),Score=score);head(Result) #Score가 높을수록 치안이 안 좋음
+```
+
+```{r}
+head(arrange(Result,desc(Score)),10)
+tail(arrange(Result,desc(Score)),10)
+```

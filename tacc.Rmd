@@ -1,0 +1,83 @@
+# 교통사고 예측하기(회귀식과 RandomForest 예측 비교)
+
+데이터셋 불러오기
+
+```{r}
+seoul=read.csv("newSeoul2019.csv")
+head(seoul)
+```
+
+데이터 정제
+
+종로구 데이터셋 만들기
+
+```{r}
+jr=subset(seoul,자치구명=="종로구")
+table(jr$자치구명)
+```
+
+```{r}
+head(jr);tail(jr)
+```
+
+```{r}
+rownames(jr)=c()
+tail(jr)
+```
+
+```{r}
+str(jr)
+```
+
+종로구의 발생건수와 부상자수의 상관계수 구하기
+
+```{r}
+cor(jr$발생건수,jr$부상자수)
+```
+
+종로구의 발생건수와 부상자수의 산포도 및 회귀선 그리기
+
+```{r}
+rgr=lm(부상자수~발생건수,data=jr)
+plot(jr$발생건수,jr$부상자수)
+abline(rgr,col="red")
+```
+
+```{r}
+summary(rgr)
+```
+
+```{r}
+rgr$coefficients[2]*100
+```
+
+```{r}
+jr$발생건수
+```
+
+```{r}
+library(randomForest)
+rf=randomForest(부상자수~발생건수,data=jr,ntree=100) #ntree: CTree를 몇 번 쓸 것인가(default:100)
+pred=predict(rf,list(발생건수=rep(100,5)))
+mean(pred)
+```
+
+```{r}
+rgr$coefficients[2]*145 #회귀식
+mean(predict(rf,list(발생건수=rep(145,5)))) #머신러닝
+```
+
+```{r}
+rgr$coefficients[2]*150 #회귀식
+mean(predict(rf,list(발생건수=rep(150,5)))) #머신러닝
+```
+
+```{r}
+plot(min(jr$발생건수):200,predict(rf,list(발생건수=min(jr$발생건수):200)),type="l",xlab="발생건수",ylab="부상자수(추정)",col="blue")
+abline(rgr$coefficients[1],rgr$coefficients[2],col="red")
+legend(170,170,
+       c("회귀분석","랜덤포레스트"),
+       fill=c("red","blue"),
+       cex=0.8
+       )
+```

@@ -1,0 +1,254 @@
+# Data Visualization2
+
+## Options of plot
+
+```{r}
+x=c(1,3,5,2,9,10)
+plot(x,type="b",col=c(rep("blue",5),"red"),lwd=c(rep("1",5),"3"))
+```
+
+```{r}
+price=runif(10,1,10)
+par(mfrow=c(2,2)) #c(row,col)
+plot(price,type="l")
+barplot(price)
+pie(price)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(price,type="o",pch=5)
+plot(price,type="o",pch=15,col="green")
+plot(price,type="o",pch=20,col="blue")
+plot(price,type="o",pch=sample(1:20,10,replace=T),col="red",cex=c(rep(1,8),2,1))
+```
+
+```{r}
+x=c(1,2,3,4,2,4)
+y=rep(2,6)
+plot(x,y)
+```
+
+```{r}
+#Method1
+xy.df=as.data.frame(table(x,y));xy.df
+
+plot(x,y,cex=xy.df$Freq,pch=15,type="b")
+```
+
+```{r}
+#Method2
+x=c(1,1,1,2,2,2,2,2,2,3,3,4,5,6)
+y=c(1,1,4,2,3,2,2,2,3,2,1,1,1,1)
+zz=data.frame(x,y)
+sunflowerplot(zz)
+```
+
+Using Iris data
+
+```{r}
+sunflowerplot(iris$Sepal.Length,iris$Sepal.Width)
+```
+
+## Overlapping 2 charts
+
+```{r}
+x=1:10
+mycol=rgb(0,0,1,seq(0,1,0.1))
+plot(x,col="red",type="b")
+par(new=T)
+barplot(x,col=mycol,space=1)
+```
+
+```{r}
+abc=c(110,300,150,280,310)
+boxplot(abc)
+summary(abc)
+```
+
+```{r}
+abc=c(110,300,150,280,310) #상자 가운데의 굵은 선은 중앙값
+boxplot(abc,col="yellow",horizontal=T)
+hist(abc)
+```
+
+```{r}
+def=c(1,1,1,1,1,2,5) #5는 이상치
+boxplot(def,horizontal=T)
+summary(def)
+```
+
+```{r}
+plot(cars$speed,cars$dist)
+```
+
+```{r}
+hist(cars$dist)
+```
+
+```{r}
+boxplot(cars$dist)
+```
+
+## Designing Chart
+
+```{r}
+x=c(1,3,6,8,9)
+y=c(12,56,78,32,9)
+plot(x,y)
+segments(6,78,8,32,col="red")
+arrows(3,56,1,12,col="blue")
+arrows(5,10,6,70) #Numbers don't need to be data
+text(4,40,"샘플",srt=45) #60분법
+mtext("Char",side=4,adj=0.5) #Default of adj is 0.5, upper with 1, lower if 0
+box(lty=1,col="green") #Overlapped
+rect(4,20,6,30,border="brown",density=10,col="red")
+axis(1,pos=49,at=0:10,col="orange")
+axis(2,pos=6,at=c(seq(0,35,5),35:65,seq(65,80,5)),col="orange")
+```
+
+### Using President Election Data
+
+```{r}
+election=read.csv("election_2022.csv")
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+btaggr=aggregate(cbind(투표수,이재명,윤석열,심상정)~paste(광역시도, 시군구),election,sum);btaggr
+btaggr5=head(arrange(btaggr, desc(btaggr$투표수)),5);btaggr5
+bmattaggr5=as.matrix(btaggr5[,-(1:2)]);bmattaggr5
+rownames(bmattaggr5)=btaggr5$`paste(광역시도, 시군구)`;bmattaggr5
+```
+
+```{r}
+bmatsum=bmattaggr5[,1]+bmattaggr5[,2]+bmattaggr5[,3]
+```
+
+```{r}
+pyoon=paste(round(bmattaggr5[,2]/bmatsum*100,2),"%");pyoon
+plee=paste(round(bmattaggr5[,1]/bmatsum*100,2),"%");plee
+```
+
+```{r}
+options(scipen=100)
+barplot(t(bmattaggr5[,1:3]),
+        main="투표수 높은 지역의 후보별 득표수",
+        col=c("skyblue","red","yellow"),
+        ylim=c(0,600000),
+        cex.names = 0.7,
+        las=1
+)
+legend(5,590000,
+       colnames(bmattaggr5)[3:1],
+       fill=c("yellow","red","skyblue"),
+       cex=0.8
+)
+for(i in 1:length(bmatsum)){
+  text(0.7+1.2*(i-1),c(bmatsum[i]+30000,bmattaggr5[i,1]/2,bmattaggr5[i,1]+bmattaggr5[i,2]/2),
+       c(bmatsum[i],plee[i],pyoon[i]),col=c("#008000","black","black"))
+}
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+qplot(Sepal.Length,Petal.Length,data=iris,col=Species,size=Petal.Width)
+```
+
+## Mathematical function
+
+```{r}
+f=function(x){
+  y=x^2
+  return(y)
+}
+g=function(x){
+  return(sin(2*x))
+}
+```
+
+```{r}
+x=seq(-5,5,0.1)
+#plot(x,f(x),type="l")
+plot(x,0.5*sin(2*x),type="l",ylim=c(-1,1))
+lines(x,0.5*cos(2*x),type="l")
+axis(1,pos=0,at=c(-5,5),col="black")
+```
+
+```{r}
+plot(x,x^2+2*x+3,type="l")
+```
+
+## Basic Statistics
+
+#### Medicine for diet
+
+```{r}
+flour=c(3,-2,-1,0,1,-2)
+diet=c(-4,1,-3,-5,-2,-8)
+```
+
+```{r}
+total=c(flour,diet);total
+```
+
+```{r}
+summary(total)
+```
+
+```{r}
+hist(total)
+boxplot(total,horizontal=T)
+```
+
+```{r}
+boxplot(flour,diet,horizontal=T)
+```
+
+```{r}
+cor(flour,diet) #Effectiveness of the medicine, the less the more effective
+```
+
+#### Cafe
+
+```{r}
+cafe=read.csv("coffee.csv");cafe
+```
+
+```{r}
+table(cafe$Coffee)
+range(cafe$Coffee)
+```
+
+범위 빈도수
+
+```{r}
+coffee_range=seq(0,60,10)
+table(cut(cafe$Coffee,breaks=coffee_range,right=F))
+```
+
+줄기잎 그래프
+
+```{r}
+stem(cafe$Coffee)
+```
+
+```{r}
+sd(cafe$Coffee)/mean(cafe$Coffee)
+sd(cafe$Fruit.Cup)/mean(cafe$Fruit.Cup)
+```
+
+```{r}
+sort(cafe$Fruit.Cup)
+sort(cafe$Coffee)
+```
+
+```{r}
+boxplot(cafe$Coffee,cafe$Fruit.Cup)
+```

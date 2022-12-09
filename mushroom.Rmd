@@ -1,0 +1,97 @@
+# Mushroom
+
+```{r}
+library(caret)
+library(randomForest)
+library(nnet)
+library(e1071)
+```
+
+## Random Forest를 이용한 버섯 분류
+
+```{r}
+mr=read.csv("mushroom.csv",header=F)
+head(mr)
+```
+
+8124종류의 버섯의 특징과 독의 유무를 정리
+
+V1: 독의 유무 -\> 독은 p, 식용은 e
+
+V2: 버섯의 머리 모양 -\> b은 종, c는 원뿔, x는 볼록, f는 평평, k는 혹, s는 오목
+
+V4: 버섯의 머리색 -\> n은 갈색, b는 황갈색, c는 연한 갈색, g는 회색
+
+자세한 내용은 사이트 참조.
+
+V5:
+
+V6:
+
+V7:
+
+V8:
+
+V9:
+
+```{r}
+str(mr)
+```
+
+머신러닝 사용을 위해서는 숫자가 필요하다.
+
+```{r}
+for (i in 2:23){
+  mr[,i]=as.factor(mr[,i])
+  mr[,i]=as.numeric(mr[,i])
+}
+str(mr)
+```
+
+```{r}
+head(mr)
+```
+
+V1을 기준으로 p와 e를 정렬
+
+```{r}
+library(dplyr)
+mr=arrange(mr,V1) #rownames도 자동으로 정렬
+head(mr);tail(mr)
+```
+
+```{r}
+mr$V1=as.factor(mr$V1)
+table(mr$V1)[1]/table(mr$V1)[2]
+```
+
+샘플링
+
+```{r}
+set.seed(1234)
+samp=createDataPartition(mr$V1,p=0.7,list=F)
+data.train=mr[samp,]
+data.test=mr[-samp,]
+x=subset(data.test,select=-V1)
+y=data.test$V1
+```
+
+예측
+
+```{r}
+model.rforest=randomForest(V1~.,data=data.train,ntree=100)
+pred.rforest=predict(model.rforest,x,type='class')
+mean(pred.rforest==y)
+```
+
+```{r}
+model.nnet=nnet(V1~.,data=data.train,size=3)
+pred.nnet=predict(model.nnet,x,type='class')
+mean(pred.nnet==y)
+```
+
+```{r}
+model.svm=svm(V1~.,data=data.train,size=3)
+pred.svm=predict(model.svm,x,type='class')
+mean(pred.svm==y)
+```

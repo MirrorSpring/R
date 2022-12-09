@@ -1,0 +1,75 @@
+# 1880년부너 2014년까지의 미국의 아기이름
+
+```{r}
+baby=read.csv("R_Baby_Names_1880-2014.csv")
+head(baby)
+```
+
+```{r}
+str(baby)
+```
+
+```{r}
+baby2=baby
+baby2$Year=substr(baby$Year,7,10)
+head(baby2)
+```
+
+```{r}
+write.csv(baby2,"baby.csv", row.names=F) #20MB difference
+```
+
+```{r}
+female=subset(baby2,Gender=="F")
+```
+
+```{r}
+head(female)
+```
+
+```{r}
+table(female$Gender)
+nrow(female)
+```
+
+```{r}
+length(unique(female$Name))
+```
+
+```{r}
+aggf=aggregate(Count~Name,female,sum)
+```
+
+```{r}
+library(dplyr)
+arraggf=arrange(aggf,desc(Count))
+head(arraggf,10)
+```
+
+```{r}
+malep=aggregate(Count~Year,subset(baby2,Gender=="M"),sum);malep
+femalep=aggregate(Count~Year,subset(baby2,Gender=="F"),sum);femalep
+malep$Count
+
+```
+
+```{r}
+plot(as.matrix(malep),
+     main="Population",
+     xlim=c(1870,2020),
+     ylim=c(0,2500000),
+     type="l", #Default is "p"
+     col="blue",
+     xlab="Year",
+     ylab="Count"
+     )
+lines(as.matrix(femalep),
+      type="l",
+      col="red",
+      )
+legend(1980,500000*2,
+       c("Female","Male"),
+       fill=c("red","blue"),
+       cex=1 #Default is 1
+       )
+```

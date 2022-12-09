@@ -1,0 +1,202 @@
+# Data
+
+```{r}
+library(plotrix)
+library(dplyr)
+```
+
+한국의 인구
+
+```{r}
+metro=read.csv("metro_total_1992_2020.csv");metro
+```
+
+```{r}
+sum(is.na(metro))
+nrow(metro)
+range(metro$년도)
+metro$전국
+```
+
+한국의 총인구
+
+```{r}
+options(scipen=100)
+pop=read.csv("population_1960_2020.csv")
+subpop=subset(pop,pop$년도>1991);head(subpop)
+```
+
+```{r}
+plot(as.matrix(cbind(subpop$년도,metro$전국/1000000)),
+     main="대한민국 인구",
+     xlim=c(1992,2020),
+     ylim=c(0,(max(pop$총인구)*1.5)/1000000),
+     type="l",
+     xlab="연도",
+     ylab="인구(백만 명)",
+     col="blue"
+     )
+```
+
+```{r}
+clrs=rainbow(length(colnames(metro)[-(1:2)]))
+plot(as.matrix(cbind(metro$년도,metro$서울특별시/1000000)),
+     main="대한민국 광역시도별 인구",
+     xlim=c(1992,2027),
+     ylim=c(0,max(metro$서울특별시)*1.3/1000000),
+     type="l",
+     xlab="연도",
+     ylab="인구(백만 명)"
+     )
+for (i in 4:length(colnames(metro))){
+  lines(as.matrix(cbind(metro[,1],metro[,i]/1000000)),
+  type="l",
+  col=clrs[i-3]
+  )
+}
+legend(2021,14,
+       colnames(metro)[-(1:2)],
+       fill=c("black",clrs),
+       cex=0.7
+)
+```
+
+```{r}
+clrs=rainbow(length(colnames(metro)[-c(1,2,3,11)]))
+plot(as.matrix(cbind(metro$년도,metro$서울특별시/1000000)),
+     main="대한민국 광역시도별 인구(서울, 경기 제외)",
+     xlim=c(1992,2027),
+     ylim=c(0,max(metro$경상남도)*1.1/1000000),
+     type="l",
+     xlab="연도",
+     ylab="인구(백만 명)"
+     )
+for (i in 4:length(colnames(metro))-2){
+  if(i==11){
+    i=i+1
+  }
+  lines(as.matrix(cbind(metro[,1],metro[,i]/1000000)),
+  type="l",
+  col=clrs[i-3]
+  )
+}
+legend(2021,4,
+       colnames(metro)[-c(1,2,3,11)],
+       fill=c(clrs),
+       cex=0.7
+)
+```
+
+```{r}
+met=metro[,c(1,3:9)];head(met)
+met$sum=apply(met[,-1],1,sum);head(met)
+imet=metro[,c(1,(10:length(colnames(metro))))];head(imet)
+imet$sum=apply(imet[-1],1,sum);imet
+imet
+```
+
+```{r}
+matmet=as.matrix(met[,c(1,length(colnames(met)))]);matmet #광역시
+imatmet=as.matrix(imet[,c(1,length(colnames(imet)))]);imatmet #비광역시
+
+```
+
+```{r}
+barplot(rbind(matmet[,2],imatmet[,2])/10000000,
+        main="광역시와 비광역시의 인구",
+        xlab="연도",
+        ylab="인구(천만 명)",
+        col=c("#FF6666","#00AAFF"),
+        names=matmet[,1])
+legend(27,4,c("광역시","비광역시"),fill=c("#FF6666","#00AAFF"))
+```
+
+```{r}
+gr=imet$경기도
+gi=imet$sum
+summary(lm(gi~gr))
+summary(lm(gi~metro$전국))
+```
+
+```{r}
+sd=cbind(metro$년도,metro$서울특별시+metro$경기도);head(sd)
+sid=cbind(metro$년도,metro$전국-sd[,2]);head(sid)
+```
+
+```{r}
+barplot(rbind(sid[,2],sd[,2])/10000000,
+        main="수도권과 비수도권의 인구",
+        xlab="연도",
+        ylab="인구(천만 명)",
+        col=c("#FF6666","#00AAFF"),
+        names=sd[,1])
+legend(27,4,c("수도권","비수도권"),fill=c("#00AAFF","#FF6666"))
+```
+
+```{r}
+barplot(rbind(sd[,2],matmet[,2]-metro$인천광역시-metro$서울특별시,metro$전국-sd[,2]-matmet[,2]+metro$인천광역시+metro$서울특별시)/10000000,
+        main="수도권과 광역시, 비수도권의 인구",
+        xlab="연도",
+        ylab="인구(천만 명)",
+        col=c("#FF6666","#00AAFF","green"),
+        names=sd[,1])
+legend(27,1.5,c("비광역시","광역시","수도권"),fill=c("green","#00AAFF","#FF6666"))
+```
+
+```{r}
+summary(lm(metro$전국~sd[,2]))
+```
+
+```{r}
+gs=met$서울특별시
+gm=met$sum
+summary(lm(gm~gs))
+```
+
+전체 인구에서 광역시 인구가 차지하는 비율
+
+```{r}
+plot(as.matrix(cbind(met$년도,met$sum/metro$전국*100)), type="l", col="blue",ylim=c(0,70))
+```
+
+```{r}
+seoul=read.csv("newSeoul2019.csv");head(seoul)
+```
+
+```{r}
+sums=aggregate(발생건수~년도,seoul,sum);sums
+sump=tail(metro[,c(1,3,11)],10)[-10,];sump
+rownames(sump)=c();sump
+```
+
+```{r}
+plot(as.matrix(cbind(sums$년도,sums$발생건수/10000)),
+     main="서울시 교통사고 발생건수",
+     xlim=c(2011,2019),
+     ylim=c(0,max(sums$발생건수/10000)*1.2),
+     type="l",
+     xlab="연도",
+     ylab="발생건수(만 건)",
+     col="blue"
+     )
+```
+
+```{r}
+plot(as.matrix(cbind(sump$년도,(sump$서울특별시+sump$경기도)/1000000)),
+     main="수도권 인구",
+     xlim=c(2011,2019),
+     ylim=c(0,(max(sump$경기도+sump$경기도)*1.2)/1000000),
+     type="l",
+     xlab="연도",
+     ylab="인구수(백만 명)",
+     col="blue"
+     )
+lines(as.matrix(cbind(sump$년도,sump$경기도/1000000)),
+  type="l",
+  col="red"
+)
+legend(2017,7,
+       c("서울", "경기도"),
+       fill=c("blue","red"),
+)
+```

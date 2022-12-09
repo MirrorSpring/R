@@ -27,7 +27,7 @@ plot(x,y,
 ```
 
 ```{r}
-seoul=read.csv("NewSeoul2019.csv")
+seoul=read.csv("newSeoul2019.csv")
 head(seoul)
 ```
 

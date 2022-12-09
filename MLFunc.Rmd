@@ -1,0 +1,104 @@
+# 인공신경망을 이용한 평균 예측률 구하기
+
+```{r}
+library(nnet)
+library(caret)
+```
+
+NNet
+
+```{r}
+nnetFun=function(n){
+  for (i in 1:n){
+    if(i==1){
+    resultVec=c()
+    }
+    samp=createDataPartition(iris$Species,p=0.7,list=F)
+    data.train=iris[samp,]
+    data.test=iris[-samp,]
+    x=subset(data.test,select=-Species)
+    y=data.test$Species
+    model.nnet=nnet(Species~.,data=data.train,size=3)
+    pred.nnet=predict(model.nnet,x,type='class')
+    resultVec=append(resultVec,mean(pred.nnet==y))
+  }
+  cat("-------------------------------\n")
+  cat("예측률\n")
+  cat(resultVec,"\n")
+  cat("-------------------------------\n")
+  cat("평균예측률\n")
+  cat(mean(resultVec),"\n")
+  return(mean(resultVec))
+}
+```
+
+```{r}
+nnetresult=nnetFun(5)
+```
+
+RandomForest
+
+```{r}
+RForestFun=function(n){
+  for (i in 1:n){
+    if(i==1){
+    resultVec=c()
+    }
+    samp=createDataPartition(iris$Species,p=0.7,list=F)
+    data.train=iris[samp,]
+    data.test=iris[-samp,]
+    x=subset(data.test,select=-Species)
+    y=data.test$Species
+    model.rforest=randomForest(Species~.,data=data.train,ntree=100)
+    pred.rforest=predict(model.rforest,x,type='class')
+    resultVec=append(resultVec,mean(pred.rforest==y))
+  }
+  cat("-------------------------------\n")
+  cat("예측률\n")
+  cat(resultVec,"\n")
+  cat("-------------------------------\n")
+  cat("평균예측률\n")
+  cat(mean(resultVec),"\n")
+  return(mean(resultVec))
+}
+```
+
+```{r}
+rforestresult=RForestFun(5)
+```
+
+SVM
+
+```{r}
+SVMFun=function(n){
+  resultVec=c()
+  for (i in 1:n){
+    if(i==1){
+    resultVec=c()
+    }
+    samp=createDataPartition(iris$Species,p=0.7,list=F)
+    data.train=iris[samp,]
+    data.test=iris[-samp,]
+    x=subset(data.test,select=-Species)
+    y=data.test$Species
+    model.svm=svm(Species~.,data=data.train)
+    pred.svm=predict(model.svm,x,type='class')
+    resultVec=append(resultVec,mean(pred.svm==y))
+  }
+  cat("-------------------------------\n")
+  cat("예측률\n")
+  cat(resultVec,"\n")
+  cat("-------------------------------\n")
+  cat("평균예측률\n")
+  cat(mean(resultVec),"\n")
+  return(mean(resultVec))
+}
+```
+
+```{r}
+svmresult=SVMFun(5)
+```
+
+```{r}
+barplot(as.matrix(c(nnetresult,rforestresult,svmresult),c("NNet","RandomForest","SVM")),beside=T,xlab=)
+```

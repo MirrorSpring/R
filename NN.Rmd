@@ -1,0 +1,88 @@
+# Neural Network
+
+```{r}
+head(iris)
+```
+
+학습용 데이터와 검증용 데이터 분리
+
+```{r}
+set.seed(1234)
+samp=c(sample(1:50,35),sample(51:100,35),sample(101:150,35))
+samp
+```
+
+학습용 데이터 생성
+
+```{r}
+data.train=iris[samp,];data.train
+```
+
+검증용 데이터 생성
+
+```{r}
+data.test=iris[-samp,];data.test
+```
+
+데이터 분류 확인하기
+
+```{r}
+summary(data.train)
+summary(data.test)
+```
+
+### 인공신경망으로 학습시키기
+
+```{r}
+library(nnet)
+```
+
+모델 만들기
+
+```{r}
+model.nnet=nnet(Species~.,data=data.train,size=3) #size는 은닉층 개수
+```
+
+문제와 정답 만들기
+
+```{r}
+x=subset(data.test,select=-Species)
+head(x)
+```
+
+```{r}
+y=data.test$Species
+head(y)
+```
+
+검증
+
+```{r}
+pred=predict(model.nnet,x,type="class") #type에는 class(객관식), row(주관식)이 있음
+head(pred)
+```
+
+예측력 확인
+
+```{r}
+mean(pred==y)*100
+```
+
+정오표
+
+```{r}
+table(pred,y)
+```
+
+사용 가능하다고 판단되면 모든 데이터를 기준으로 학습
+
+```{r}
+model.nnet=nnet(Species~.,data=iris,size=3)
+```
+
+실제 데이터로 시험
+
+```{r}
+real=data.frame(Sepal.Length=9.3,Sepal.Width=2.2,Petal.Length=7.5,Petal.Width=3.5) #공부한 범위 밖
+predict(model.nnet,real,type="class")
+```

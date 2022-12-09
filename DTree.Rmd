@@ -1,0 +1,42 @@
+# Decision Tree
+
+```{r}
+library(party)
+library(caret)
+```
+
+샘플링
+
+```{r}
+set.seed(1234)
+samp=createDataPartition(iris$Species,p=0.7,list=F);head(samp) #알아서 훌륭하게 샘플링
+```
+
+학습용 데이터와 테스트용 데이터 분리
+
+```{r}
+data.train=iris[samp,]
+data.test=iris[-samp,]
+```
+
+문제와 정답 만들기
+
+```{r}
+x=subset(data.test,select=-Species)
+y=data.test$Species
+```
+
+```{r}
+iris_tree=ctree(Species~.,data=data.train)
+```
+
+```{r}
+pred=predict(iris_tree,x);head(pred)
+```
+
+```{r}
+mean(pred==y)
+table(pred,y)
+```
+
+데이터에 따라 가장 좋은 알고리즘이 달라진다.
